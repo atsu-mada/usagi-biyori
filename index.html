@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; base-uri 'none'; form-action 'none'">
+<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src https://api.devnet.solana.com wss://api.devnet.solana.com; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; base-uri 'none'; form-action 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Usagi Biyori</title>
@@ -88,6 +88,11 @@ button{font-family:inherit;color:inherit}
 .stats{display:inline-block;text-align:left;border-top:1px solid var(--green);border-bottom:1px solid var(--green);padding:8px 18px;margin-top:6px}
 .stats div{display:flex;justify-content:space-between;gap:24px}
 .kbd{font-size:13px;opacity:.85}
+.stamp{margin-top:14px;padding-top:12px;border-top:1px solid var(--green);text-align:center}
+.stamp .st{font-weight:700;letter-spacing:.1em}
+.stamp p{font-size:13px;margin:6px 0}
+.stamp a{color:var(--red)}
+.stampmsg{min-height:1.4em;word-break:break-all}
 </style>
 </head>
 <body>
@@ -124,6 +129,12 @@ button{font-family:inherit;color:inherit}
   <footer class="foot">
     <div class="cnt" data-demo="footer-count" data-i18n="count"></div>
     <div class="note" data-i18n="note"></div>
+    <div class="stamp" data-demo="solana-stamp">
+      <div class="st" data-i18n="stTitle"></div>
+      <p data-i18n="stLead"></p>
+      <button class="btn alt" id="stampBtn" type="button" data-demo="stamp-ticket" data-i18n="stBtn"></button>
+      <p class="stampmsg" id="stampMsg" aria-live="polite"></p>
+    </div>
   </footer>
 </div>
 
@@ -165,6 +176,10 @@ button{font-family:inherit;color:inherit}
         <button class="btn" id="againBtn" type="button" data-demo="game-again" data-i18n="gAgain"></button>
         <button class="btn alt" id="backBtn" type="button" data-demo="game-back" data-i18n="gBack"></button>
       </div>
+      <div class="stamp" id="rStamp" hidden>
+        <button class="btn alt" id="stampWinBtn" type="button" data-demo="stamp-win" data-i18n="stWinBtn"></button>
+        <p class="stampmsg" id="stampWinMsg" aria-live="polite"></p>
+      </div>
     </section>
   </div>
 </div>
@@ -203,7 +218,16 @@ gTime:'あと {n} 秒',gLivesAria:'のこりのにんじん',gHit:'ぶつかっ�
 winT:'間に合った',winS:'ホームに滑り込み、終電に乗れました。おつかれさま。',
 failT:'終電は行ってしまった',failS:'ホームにはもう誰もいません。また明日。',
 sCarrot:'のこりのにんじん',sTime:'走った時間',unitSec:'{n} 秒',
-gAgain:'もう一度',gBack:'ページに戻る'
+gAgain:'もう一度',gBack:'ページに戻る',
+stTitle:'半券スタンプ（Solana devnet）',
+stLead:'ウォレットをつなぐと、来場の記念を Solana のテスト用ネットワーク（devnet）に刻めます。本物のお金は使いません。',
+stBtn:'半券にスタンプを押す',stWinBtn:'終電に乗れた記念を Solana に刻む',
+stNoWallet:'Solana のウォレット（Phantom など）が見つかりません。',
+stLoading:'準備しています…',stConnecting:'ウォレットに接続しています…',stAirdrop:'テスト用の SOL を受け取っています…',
+stSigning:'ウォレットで署名してください…',stSending:'devnet に送信しています…',
+stDone:'刻みました。',stView:'Solana Explorer で見る',
+stNoSol:'テスト用の SOL が足りません。faucet.solana.com で devnet の SOL を受け取ってから、もう一度お試しください。',
+stFail:'うまくいきませんでした：'
 },
 en:{
 docTitle:'Usagi Biyori | A fictional rabbit video site',
@@ -237,7 +261,16 @@ gTime:'{n}s left',gLivesAria:'Carrots left',gHit:'Ouch!',gSign:'LAST',
 winT:'Just in time!',winS:'You slid onto the platform and boarded the last train. Well done.',
 failT:'The last train has left.',failS:'The platform is empty now. Try again tomorrow.',
 sCarrot:'Carrots left',sTime:'Time run',unitSec:'{n}s',
-gAgain:'Play again',gBack:'Back to the program'
+gAgain:'Play again',gBack:'Back to the program',
+stTitle:'Ticket stamp (Solana devnet)',
+stLead:'Connect a wallet to record your visit on Solana devnet, the test network. No real money is used.',
+stBtn:'Stamp my ticket',stWinBtn:'Record this win on Solana',
+stNoWallet:'No Solana wallet (such as Phantom) was found.',
+stLoading:'Getting ready…',stConnecting:'Connecting to your wallet…',stAirdrop:'Requesting test SOL…',
+stSigning:'Please sign in your wallet…',stSending:'Sending to devnet…',
+stDone:'Recorded.',stView:'View on Solana Explorer',
+stNoSol:'Not enough test SOL. Get devnet SOL at faucet.solana.com and try again.',
+stFail:'Something went wrong: '
 }};
 
 const FILMS=[
@@ -446,6 +479,7 @@ function renderResult(){
   $('#rSub').textContent=t(w?'winS':'failS');
   $('#rStats').innerHTML='<div><span>'+t('sCarrot')+'</span><b>'+'🥕'.repeat(result.lives)+(result.lives?'':'0')+'</b></div>'
     +'<div><span>'+t('sTime')+'</span><b>'+t('unitSec',{n:result.time.toFixed(1)})+'</b></div>';
+  $('#rStamp').hidden=!w;$('#stampWinMsg').textContent='';
 }
 
 $('#goBtn').addEventListener('click',startGame);
@@ -461,6 +495,51 @@ window.addEventListener('keydown',e=>{
   if(scr==='play'&&(e.code==='Space'||e.key==='ArrowUp')){hold=true;e.preventDefault();}
 });
 window.addEventListener('keyup',e=>{if(e.code==='Space'||e.key==='ArrowUp')hold=false;});
+
+/* Solana devnet stamp: writes a short memo with the Memo program. */
+const SOL={rpc:'https://api.devnet.solana.com',memo:'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+  lib:'vendor/solana-web3-1.95.8.iife.min.js',minLamports:20000,airdrop:10000000};
+let stamping=false;
+function loadWeb3(){
+  if(window.solanaWeb3)return Promise.resolve();
+  return new Promise((res,rej)=>{const s=document.createElement('script');s.src=SOL.lib;s.onload=()=>res();s.onerror=()=>rej(new Error('web3.js'));document.head.appendChild(s);});
+}
+function getWallet(){
+  const c=[window.phantom&&window.phantom.solana,window.solana,window.solflare,window.backpack];
+  return c.find(w=>w&&typeof w.connect==='function'&&typeof w.signTransaction==='function')||null;
+}
+async function stampOnSolana(memoText,msgEl){
+  if(stamping)return;stamping=true;
+  const say=k=>{msgEl.textContent=t(k);};
+  try{
+    const w=getWallet();if(!w){say('stNoWallet');return;}
+    say('stLoading');await loadWeb3();
+    const W=window.solanaWeb3,conn=new W.Connection(SOL.rpc,'confirmed');
+    say('stConnecting');const r=await w.connect();
+    const pk=new W.PublicKey(((r&&r.publicKey)||w.publicKey).toString());
+    if(await conn.getBalance(pk)<SOL.minLamports){
+      say('stAirdrop');
+      try{const a=await conn.requestAirdrop(pk,SOL.airdrop);await conn.confirmTransaction(a,'confirmed');}
+      catch(e){say('stNoSol');return;}
+    }
+    const bh=await conn.getLatestBlockhash('confirmed');
+    const tx=new W.Transaction({feePayer:pk,blockhash:bh.blockhash,lastValidBlockHeight:bh.lastValidBlockHeight});
+    tx.add(new W.TransactionInstruction({programId:new W.PublicKey(SOL.memo),
+      keys:[{pubkey:pk,isSigner:true,isWritable:false}],data:new TextEncoder().encode(memoText)}));
+    say('stSigning');const signed=await w.signTransaction(tx);
+    say('stSending');const sig=await conn.sendRawTransaction(signed.serialize());
+    await conn.confirmTransaction({signature:sig,blockhash:bh.blockhash,lastValidBlockHeight:bh.lastValidBlockHeight},'confirmed');
+    msgEl.textContent=t('stDone')+' ';
+    const a=document.createElement('a');a.href='https://explorer.solana.com/tx/'+encodeURIComponent(sig)+'?cluster=devnet';
+    a.target='_blank';a.rel='noopener';a.textContent=t('stView');msgEl.appendChild(a);
+  }catch(e){msgEl.textContent=t('stFail')+((e&&e.message)||String(e)).slice(0,160);}
+  finally{stamping=false;}
+}
+$('#stampBtn').addEventListener('click',()=>stampOnSolana('Usagi Biyori | ticket stub',$('#stampMsg')));
+$('#stampWinBtn').addEventListener('click',()=>{
+  if(!result||!result.win)return;
+  stampOnSolana('Usagi Biyori | caught the last train | carrots '+result.lives+' | '+result.time.toFixed(1)+'s',$('#stampWinMsg'));
+});
 
 applyLang();
 </script>
