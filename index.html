@@ -38,6 +38,12 @@ button{font-family:inherit;color:inherit}
 .extra .cap{color:var(--red)}
 .extra .cap b{font-size:15px}
 .extra .tagx{position:absolute;left:6px;top:6px;background:var(--paper);color:var(--red);font-size:11px;padding:0 6px;font-weight:700;letter-spacing:.1em;border:1px solid var(--paper)}
+.thumb.playing{background:var(--red)}
+.thumb.playing .shot{background:var(--red)!important;border-bottom-color:var(--paper)}
+.thumb.playing .shot>span:first-child{animation:sway 3s ease-in-out infinite}
+.thumb.playing .cap{background:var(--red);color:var(--paper)}
+.thumb.playing .playmark{background:var(--paper);color:var(--red);font-size:9px;letter-spacing:-1px}
+@keyframes sway{0%,100%{transform:translate(-4px,0) rotate(-5deg)}50%{transform:translate(4px,-5px) rotate(5deg)}}
 .extra{animation:wob 2.4s infinite;transform-origin:50% 60%}
 @keyframes wob{0%,45%,100%{transform:rotate(0)}5%{transform:rotate(-3deg)}12%{transform:rotate(3deg)}19%{transform:rotate(-2.5deg)}26%{transform:rotate(2.5deg)}33%{transform:rotate(-1.5deg)}40%{transform:rotate(1.5deg)}}
 .panel{display:flex;gap:14px;margin-top:14px;border:2px solid var(--green);padding:12px;align-items:center}
@@ -61,7 +67,7 @@ button{font-family:inherit;color:inherit}
 .runner.go span{animation:hop .45s ease-in-out infinite}
 @keyframes cross{from{transform:translateX(-80px)}to{transform:translateX(calc(100vw + 80px))}}
 @keyframes hop{50%{transform:translateY(-12px)}}
-@media(prefers-reduced-motion:reduce){.extra,.runner.go,.runner.go span{animation:none}.runner{display:none}}
+@media(prefers-reduced-motion:reduce){.thumb.playing .shot>span:first-child,.extra,.runner.go,.runner.go span{animation:none}.runner{display:none}}
 .btn{background:var(--green);color:var(--paper);border:2px solid var(--green);padding:10px 22px;min-height:44px;font-size:16px;letter-spacing:.1em;cursor:pointer}
 .btn:hover{background:var(--red);border-color:var(--red)}
 .btn.alt{background:transparent;color:var(--green)}
@@ -262,12 +268,13 @@ function renderFilms(){
   const g=$('#grid');
   g.innerHTML=FILMS.map((f,i)=>{
     const n=i+1,title=t('f'+n+'t');
-    const cls='thumb'+(f.extra?' extra':'')+(sel===i?' sel':'');
+    const playing=!f.extra&&sel===i&&!ended;
+    const cls='thumb'+(f.extra?' extra':'')+(sel===i?' sel':'')+(playing?' playing':'');
     const tag=f.extra?'<span class="tagx">'+t('extraTag')+'</span>':'';
     const cap=f.extra?'<b>'+title+'</b>':title;
-    return '<button type="button" class="'+cls+'" data-i="'+i+'" data-demo="'+(f.extra?'thumb-extra':'thumb-'+n)+'" aria-label="'+title+'（'+f.d+'）">'
+    return '<button type="button" class="'+cls+'" data-i="'+i+'" data-demo="'+(f.extra?'thumb-extra':'thumb-'+n)+'"'+(f.extra?'':' aria-pressed="'+playing+'"')+' aria-label="'+title+'（'+f.d+'）">'
       +'<span class="shot" style="background:'+f.bg+'"><span aria-hidden="true">'+f.e+'</span>'+tag
-      +'<span class="playmark" aria-hidden="true">▶</span><span class="dur" aria-hidden="true">'+f.d+'</span></span>'
+      +'<span class="playmark" aria-hidden="true">'+(playing?'❚❚':'▶')+'</span><span class="dur" aria-hidden="true">'+f.d+'</span></span>'
       +'<span class="cap" aria-hidden="true">'+cap+'</span></button>';
   }).join('');
 }
@@ -286,11 +293,14 @@ function selectFilm(i){
   sel=i;ended=false;renderFilms();renderPanel();
   const b=$('#pBar');b.className='';void b.offsetWidth;b.className='run';
 }
-$('#pBar').addEventListener('animationend',()=>{ended=true;$('#pBar').className='full';renderPanel();});
+function stopFilm(){sel=null;ended=false;$('#pBar').className='';renderFilms();renderPanel();}
+$('#pBar').addEventListener('animationend',()=>{ended=true;$('#pBar').className='full';renderFilms();renderPanel();});
 $('#grid').addEventListener('click',e=>{
   const b=e.target.closest('.thumb');if(!b)return;
   const i=+b.dataset.i;
-  if(FILMS[i].extra)openGame();else selectFilm(i);
+  if(FILMS[i].extra){openGame();return;}
+  if(sel===i&&!ended)stopFilm();else selectFilm(i);
+  const nb=$('#grid').querySelector('[data-i="'+i+'"]');if(nb)nb.focus();
 });
 
 function applyLang(){
@@ -419,7 +429,7 @@ function draw(){
   /* rabbit */
   if(!(g.inv>0&&Math.floor(g.t*12)%2===0)){
     c.font='30px serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#1f3d2b';
-    c.fillText('🐇',g.px,g.y);
+    c.save();c.translate(g.px,g.y);c.scale(-1,1);c.fillText('🐇',0,0);c.restore();
   }
 }
 function finish(){
