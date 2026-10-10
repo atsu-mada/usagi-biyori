@@ -1,2 +1,19 @@
-# usagi-biyori
-名画座パンフレット風の架空うさぎ動画サイト紹介ページ＋隠しゲーム「終電まであと30秒」
+# Usagi Biyori
+
+
+
+- ▶ **Try it:** https://atsu-mada.github.io/usagi-biyori/
+
+## About
+
+See the app and [IDEA.md](IDEA.md) (the idea log, in Japanese).
+
+## How it was made
+
+Built by shaping the idea together with AI (Claude) and publishing the AI-written code.
+The full conversation is in [IDEA.md](IDEA.md) (Japanese).
+
+## Files
+
+- `index.html` — the app (a single self-contained file)
+- `IDEA.md` — the idea log

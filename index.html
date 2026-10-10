@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; base-uri 'none'; form-action 'none'">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Usagi Biyori</title>
+<style>
+:root{--paper:#efe4cc;--green:#1f3d2b;--red:#8a2b1c;--paper2:#e6d7b4}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--green);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","MS PMincho",serif;line-height:1.6;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.page{max-width:980px;margin:10px auto;padding:14px 16px 20px;border:6px double var(--green);width:calc(100% - 20px)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;letter-spacing:.08em}
+.lang{background:transparent;border:1px solid var(--green);padding:6px 12px;min-height:36px;cursor:pointer;font-size:14px}
+.lang:hover{background:var(--paper2)}
+.lang span.on{font-weight:700;color:var(--red);border-bottom:2px solid var(--red)}
+.mast{text-align:center;padding:10px 0 14px}
+.mark{font-size:26px;margin-top:6px}
+.title{margin:0;font-size:clamp(46px,13vw,100px);line-height:1.15;letter-spacing:.06em;font-weight:700}
+.title .hi{color:var(--red)}
+.tag{display:inline-block;margin:10px 0 0;padding:8px 18px 6px;border-top:1px solid var(--green);border-bottom:1px solid var(--green);font-size:clamp(14px,3.8vw,19px);letter-spacing:.12em}
+.film{background:var(--green);margin-top:8px}
+.holes{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 12px}
+@media(max-width:639px){.grid{grid-template-columns:repeat(2,1fr)}}
+.thumb{display:block;width:100%;padding:0;margin:0;background:var(--paper);border:0;text-align:left;cursor:pointer}
+.thumb:focus-visible{outline:3px solid var(--paper);outline-offset:2px}
+.shot{position:relative;display:grid;place-items:center;aspect-ratio:4/3;font-size:clamp(34px,7vw,56px);border-bottom:2px solid var(--green)}
+.playmark{position:absolute;left:6px;bottom:6px;width:24px;height:24px;display:grid;place-items:center;background:var(--green);color:var(--paper);font-size:11px;padding-left:2px}
+.dur{position:absolute;right:6px;bottom:6px;background:var(--green);color:var(--paper);font-size:11px;padding:1px 6px;letter-spacing:.05em}
+.cap{display:block;padding:6px 8px 8px;font-size:13px;font-weight:700;line-height:1.4;min-height:3.1em}
+.thumb:hover .cap{background:var(--paper2)}
+.thumb.sel .cap{background:var(--green);color:var(--paper)}
+.extra .shot{background:var(--red)!important;color:var(--paper)}
+.extra .cap{color:var(--red)}
+.extra .cap b{font-size:15px}
+.extra .tagx{position:absolute;left:6px;top:6px;background:var(--paper);color:var(--red);font-size:11px;padding:0 6px;font-weight:700;letter-spacing:.1em;border:1px solid var(--paper)}
+.extra{animation:wob 2.4s infinite;transform-origin:50% 60%}
+@keyframes wob{0%,45%,100%{transform:rotate(0)}5%{transform:rotate(-3deg)}12%{transform:rotate(3deg)}19%{transform:rotate(-2.5deg)}26%{transform:rotate(2.5deg)}33%{transform:rotate(-1.5deg)}40%{transform:rotate(1.5deg)}}
+.panel{display:flex;gap:14px;margin-top:14px;border:2px solid var(--green);padding:12px;align-items:center}
+.pe{flex:0 0 auto;width:84px;height:84px;display:grid;place-items:center;background:var(--paper2);border:1px solid var(--green);font-size:38px}
+.pt{flex:1;min-width:0}
+.ps{font-size:12px;letter-spacing:.2em;color:var(--red);font-weight:700}
+.pt h2{margin:0;font-size:18px}
+.pt p{margin:2px 0 0;font-size:14px}
+.pt .fine{font-size:12px;opacity:.8}
+.prog{height:8px;border:1px solid var(--green);margin:8px 0 4px;background:var(--paper)}
+.prog i{display:block;height:100%;width:0;background:var(--red)}
+.prog i.run{animation:fill 8s linear forwards}
+.prog i.full{width:100%}
+@keyframes fill{from{width:0}to{width:100%}}
+.foot{text-align:center;margin-top:18px;padding-top:12px;border-top:3px double var(--green)}
+.foot .cnt{font-size:clamp(18px,4.6vw,24px);font-weight:700;letter-spacing:.14em}
+.foot .note{font-size:12px;margin-top:2px}
+.runner{position:fixed;bottom:4px;left:0;z-index:5;font-size:28px;pointer-events:none;transform:translateX(-80px)}
+.runner span{display:inline-block}
+.runner.go{animation:cross 12s linear forwards}
+.runner.go span{animation:hop .45s ease-in-out infinite}
+@keyframes cross{from{transform:translateX(-80px)}to{transform:translateX(calc(100vw + 80px))}}
+@keyframes hop{50%{transform:translateY(-12px)}}
+@media(prefers-reduced-motion:reduce){.extra,.runner.go,.runner.go span{animation:none}.runner{display:none}}
+.btn{background:var(--green);color:var(--paper);border:2px solid var(--green);padding:10px 22px;min-height:44px;font-size:16px;letter-spacing:.1em;cursor:pointer}
+.btn:hover{background:var(--red);border-color:var(--red)}
+.btn.alt{background:transparent;color:var(--green)}
+.btn.alt:hover{background:var(--paper2);color:var(--green);border-color:var(--green)}
+.ov{position:fixed;inset:0;z-index:20;background:var(--paper);overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:10px}
+.gbox{width:100%;max-width:720px;border:6px double var(--green);padding:16px;margin:auto;background:var(--paper)}
+.gbox h2{margin:0;font-size:clamp(26px,7vw,40px);letter-spacing:.08em;text-align:center}
+.gbox h2 em{font-style:normal;color:var(--red)}
+.center{text-align:center}
+.big{font-size:64px;line-height:1.2;margin:8px 0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.hud{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:16px;margin-bottom:8px;gap:8px;min-height:28px}
+.hud .lv i{font-style:normal}
+.hud .lv i.lost{opacity:.2}
+.hud .hit{color:var(--red)}
+#cv{display:block;width:100%;height:auto;aspect-ratio:8/5;border:3px solid var(--green);touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none;background:var(--paper)}
+#scr-play{touch-action:none;user-select:none;-webkit-user-select:none}
+.stats{display:inline-block;text-align:left;border-top:1px solid var(--green);border-bottom:1px solid var(--green);padding:8px 18px;margin-top:6px}
+.stats div{display:flex;justify-content:space-between;gap:24px}
+.kbd{font-size:13px;opacity:.85}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <div class="bar">
+      <span data-i18n="eyebrow"></span>
+      <button class="lang" id="langBtn" type="button" data-demo="lang-switch" data-i18n-aria="langAria"><span data-l="ja">日本語</span> / <span data-l="en">EN</span></button>
+    </div>
+    <div class="mark" aria-hidden="true">🐇</div>
+    <h1 class="title"><span data-i18n="t1"></span><span class="hi" data-i18n="t2"></span></h1>
+    <p class="tag" data-i18n="tagline"></p>
+  </header>
+
+  <main>
+    <section class="film" data-demo="film-strip">
+      <svg class="holes" width="100%" height="18" aria-hidden="true"><defs><pattern id="hp1" width="24" height="18" patternUnits="userSpaceOnUse"><rect x="7" y="5" width="10" height="8" fill="#efe4cc"/></pattern></defs><rect width="100%" height="18" fill="url(#hp1)"/></svg>
+      <div class="grid" id="grid" data-demo="film-grid" data-i18n-aria="gridAria" role="group"></div>
+      <svg class="holes" width="100%" height="18" aria-hidden="true"><defs><pattern id="hp2" width="24" height="18" patternUnits="userSpaceOnUse"><rect x="7" y="5" width="10" height="8" fill="#efe4cc"/></pattern></defs><rect width="100%" height="18" fill="url(#hp2)"/></svg>
+    </section>
+
+    <section class="panel" id="panel" data-demo="now-showing" aria-live="polite">
+      <div class="pe" id="pEmo" aria-hidden="true">🎞️</div>
+      <div class="pt">
+        <div class="ps" id="pStatus"></div>
+        <h2 id="pTitle"></h2>
+        <p id="pSyn"></p>
+        <div class="prog" aria-hidden="true"><i id="pBar"></i></div>
+        <p class="fine" data-i18n="noVideo"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="cnt" data-demo="footer-count" data-i18n="count"></div>
+    <div class="note" data-i18n="note"></div>
+  </footer>
+</div>
+
+<div class="runner" id="runner" aria-hidden="true"><span>🐇</span></div>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="gTitle" hidden data-demo="game-overlay">
+  <div class="gbox">
+    <section id="scr-start" class="center">
+      <div class="big" aria-hidden="true">🚃🐇</div>
+      <h2 id="gTitle" data-i18n="gTitle"></h2>
+      <p data-i18n="gLead"></p>
+      <p data-i18n="gHow"></p>
+      <p class="kbd" data-i18n="gKeys"></p>
+      <div class="row">
+        <button class="btn" id="goBtn" type="button" data-demo="game-start" data-i18n="gStart"></button>
+        <button class="btn alt" id="closeBtn" type="button" data-demo="game-close" data-i18n="gClose"></button>
+      </div>
+    </section>
+
+    <section id="scr-play" hidden>
+      <div class="hud">
+        <span id="hTime" data-demo="game-timer"></span>
+        <span id="hMsg" class="hit"></span>
+        <span id="hLives" class="lv" data-demo="game-lives"></span>
+      </div>
+      <canvas id="cv" data-demo="game-canvas" role="img" data-i18n-aria="gCanvas"></canvas>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <span class="kbd" data-i18n="gHint"></span>
+        <button class="btn alt" id="quitBtn" type="button" data-demo="game-quit" data-i18n="gQuit"></button>
+      </div>
+    </section>
+
+    <section id="scr-result" class="center" hidden data-demo="game-result">
+      <div class="big" id="rArt" aria-hidden="true"></div>
+      <h2 id="rTitle"></h2>
+      <p id="rSub"></p>
+      <div class="stats" id="rStats"></div>
+      <div class="row">
+        <button class="btn" id="againBtn" type="button" data-demo="game-again" data-i18n="gAgain"></button>
+        <button class="btn alt" id="backBtn" type="button" data-demo="game-back" data-i18n="gBack"></button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const I18N={
+ja:{
+docTitle:'うさぎ日和 | Usagi Biyori',
+eyebrow:'名画座パンフレット　第一号',
+t1:'うさぎ',t2:'日和',
+tagline:'毎日、うさぎ。本日も上映中。',
+langAria:'言語を切り替え（日本語 / English）',
+gridAria:'本日の上映作品',
+count:'本日の上映作品 8本',
+note:'※架空のサイトです',
+noVideo:'※架空のサイトのため、映像はありません。',
+pIdle:'ご案内',pIdleT:'サムネイルを選んでください',pIdleS:'タップすると、ここで上映が始まります（気分だけ）。',
+nowShowing:'上映中',theEnd:'終　映',
+f1t:'日向ぼっこのうさぎ',f1s:'縁側で目を細めるうさぎを、ただ眺める三分間。',
+f2t:'にんじんをかじる朝',f2s:'さくさく、さくさく。朝いちばんの咀嚼音。',
+f3t:'草原のおひるね',f3s:'風と草と、ときどき寝言。長尺でお届けします。',
+f4t:'ぴょん、と跳ねる午後',f4s:'理由はありません。ただ、跳ねたい午後でした。',
+f5t:'耳のお手入れ',f5s:'前足でていねいに、ひと耳ずつ。',
+f6t:'雨のち、うさぎ',f6s:'雨音を聞きながら、巣穴の前で待つ静かな時間。',
+f7t:'夕焼けと丸い背中',f7s:'空が染まるあいだ、丸い背中がじっと動きません。',
+f8t:'号外',f8s:'',
+extraTag:'臨時上映',
+gTitle:'終電まであと30秒',
+gLead:'駅まで走って、終電に飛び乗ろう。',
+gHow:'画面を押している間は上昇、離すと下降。30秒間、柱をよけてください。',
+gKeys:'キーボード：スペースキー ／ ↑',
+gStart:'出発する',gClose:'閉じる',gQuit:'やめる',
+gCanvas:'横スクロールのゲーム画面。うさぎが駅へ向かって走っています。',
+gHint:'押して上昇 ／ 離して下降',
+gTime:'あと {n} 秒',gLivesAria:'のこりのにんじん',gHit:'ぶつかった！',gSign:'終電',
+winT:'間に合った',winS:'ホームに滑り込み、終電に乗れました。おつかれさま。',
+failT:'終電は行ってしまった',failS:'ホームにはもう誰もいません。また明日。',
+sCarrot:'のこりのにんじん',sTime:'走った時間',unitSec:'{n} 秒',
+gAgain:'もう一度',gBack:'ページに戻る'
+},
+en:{
+docTitle:'Usagi Biyori | A fictional rabbit video site',
+eyebrow:'Cinema Program · No. 1',
+t1:'Usagi\u00a0',t2:'Biyori',
+tagline:'Rabbits, every day. Now showing.',
+langAria:'Switch language (日本語 / English)',
+gridAria:"Today's films",
+count:"Today's program: 8 films",
+note:'*This is a fictional site.',
+noVideo:'*This site is fictional, so there is no real video.',
+pIdle:'Information',pIdleT:'Pick a film',pIdleS:'Tap a thumbnail and the show starts here (just for the mood).',
+nowShowing:'NOW SHOWING',theEnd:'THE END',
+f1t:'A Rabbit in the Sun',f1s:'Three minutes of watching a rabbit squint on the porch.',
+f2t:'Morning Carrot Crunch',f2s:'Crunch, crunch. The first chewing sound of the day.',
+f3t:'Nap in the Meadow',f3s:'Wind, grass and the occasional sleep-talk. A long cut.',
+f4t:'An Afternoon Hop',f4s:'No reason at all. It was just an afternoon for hopping.',
+f5t:'Ear Care',f5s:'Careful front paws, one ear at a time.',
+f6t:'Rain, Then Rabbit',f6s:'A quiet wait by the burrow, listening to the rain.',
+f7t:'Sunset and a Round Back',f7s:'As the sky turns red, a round back stays perfectly still.',
+f8t:'Extra!',f8s:'',
+extraTag:'SPECIAL',
+gTitle:'30 Seconds to the Last Train',
+gLead:'Run to the station and jump on the last train.',
+gHow:'Hold the screen to rise, release to fall. Dodge the pillars for 30 seconds.',
+gKeys:'Keyboard: Space or ↑',
+gStart:'Go',gClose:'Close',gQuit:'Quit',
+gCanvas:'Side-scrolling game screen. A rabbit is running toward the station.',
+gHint:'Hold to rise / release to fall',
+gTime:'{n}s left',gLivesAria:'Carrots left',gHit:'Ouch!',gSign:'LAST',
+winT:'Just in time!',winS:'You slid onto the platform and boarded the last train. Well done.',
+failT:'The last train has left.',failS:'The platform is empty now. Try again tomorrow.',
+sCarrot:'Carrots left',sTime:'Time run',unitSec:'{n}s',
+gAgain:'Play again',gBack:'Back to the program'
+}};
+
+const FILMS=[
+{e:'🐇☀️',bg:'#e2d3ae',d:'3:42'},
+{e:'🥕🐰',bg:'#d5dcbf',d:'2:15'},
+{e:'🐰💤',bg:'#ead9b8',d:'12:08'},
+{e:'🐇🌱',bg:'#cfd9c4',d:'1:30'},
+{e:'🐰✨',bg:'#e8cfa8',d:'4:05'},
+{e:'☔🐇',bg:'#d9d2b6',d:'5:50'},
+{e:'🌇🐇',bg:'#e9c9a6',d:'8:20'},
+{e:'🚃💨',bg:'#8a2b1c',d:'0:30',extra:true}
+];
+
+function getLang(){
+  if(window.APP_LANG==='ja'||window.APP_LANG==='en')return window.APP_LANG;
+  try{const q=new URLSearchParams(location.search).get('lang');if(q==='ja'||q==='en')return q;}catch(e){}
+  try{const s=localStorage.getItem('lang');if(s==='ja'||s==='en')return s;}catch(e){}
+  return 'en';
+}
+let lang=getLang();
+function t(k,v){let s=(I18N[lang]&&I18N[lang][k]);if(s===undefined)s=I18N.en[k]||k;if(v)for(const a in v)s=s.replace('{'+a+'}',v[a]);return s;}
+const $=s=>document.querySelector(s);
+
+let sel=null,ended=false;
+let game=null,raf=0,hold=false,scr='start',result=null,lastHud='';
+
+function renderFilms(){
+  const g=$('#grid');
+  g.innerHTML=FILMS.map((f,i)=>{
+    const n=i+1,title=t('f'+n+'t');
+    const cls='thumb'+(f.extra?' extra':'')+(sel===i?' sel':'');
+    const tag=f.extra?'<span class="tagx">'+t('extraTag')+'</span>':'';
+    const cap=f.extra?'<b>'+title+'</b>':title;
+    return '<button type="button" class="'+cls+'" data-i="'+i+'" data-demo="'+(f.extra?'thumb-extra':'thumb-'+n)+'" aria-label="'+title+'（'+f.d+'）">'
+      +'<span class="shot" style="background:'+f.bg+'"><span aria-hidden="true">'+f.e+'</span>'+tag
+      +'<span class="playmark" aria-hidden="true">▶</span><span class="dur" aria-hidden="true">'+f.d+'</span></span>'
+      +'<span class="cap" aria-hidden="true">'+cap+'</span></button>';
+  }).join('');
+}
+function renderPanel(){
+  if(sel===null){
+    $('#pEmo').textContent='🎞️';$('#pStatus').textContent=t('pIdle');
+    $('#pTitle').textContent=t('pIdleT');$('#pSyn').textContent=t('pIdleS');return;
+  }
+  const n=sel+1;
+  $('#pEmo').textContent=FILMS[sel].e;
+  $('#pStatus').textContent=ended?t('theEnd'):t('nowShowing')+'  '+FILMS[sel].d;
+  $('#pTitle').textContent=t('f'+n+'t');
+  $('#pSyn').textContent=t('f'+n+'s');
+}
+function selectFilm(i){
+  sel=i;ended=false;renderFilms();renderPanel();
+  const b=$('#pBar');b.className='';void b.offsetWidth;b.className='run';
+}
+$('#pBar').addEventListener('animationend',()=>{ended=true;$('#pBar').className='full';renderPanel();});
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('.thumb');if(!b)return;
+  const i=+b.dataset.i;
+  if(FILMS[i].extra)openGame();else selectFilm(i);
+});
+
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.title=t('docTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nAria));});
+  document.querySelectorAll('#langBtn [data-l]').forEach(s=>s.classList.toggle('on',s.dataset.l===lang));
+  renderFilms();renderPanel();lastHud='';renderHud();renderResult();
+  try{localStorage.setItem('lang',lang);}catch(e){}
+}
+$('#langBtn').addEventListener('click',()=>{lang=lang==='ja'?'en':'ja';applyLang();});
+
+/* rabbit crossing every 20s */
+const runner=$('#runner');
+function sendRabbit(){runner.classList.remove('go');void runner.offsetWidth;runner.classList.add('go');}
+runner.addEventListener('animationend',e=>{if(e.target===runner)runner.classList.remove('go');});
+setTimeout(sendRabbit,3000);
+setInterval(sendRabbit,20000);
+
+/* ===== Game ===== */
+const W=640,H=400,GROUND=H-36,GAP=150,OBW=46,SPEED=170;
+const cv=$('#cv'),ctx=cv.getContext('2d');
+(function(){const d=Math.min(2,window.devicePixelRatio||1);cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);})();
+
+function show(n){scr=n;['start','play','result'].forEach(s=>{$('#scr-'+s).hidden=s!==n;});}
+function openGame(){$('#ov').hidden=false;document.body.style.overflow='hidden';show('start');$('#goBtn').focus();}
+function closeGame(){cancelAnimationFrame(raf);game=null;hold=false;$('#ov').hidden=true;document.body.style.overflow='';const b=document.querySelector('[data-demo="thumb-extra"]');if(b)b.focus();}
+function startGame(){
+  game={t:0,y:GROUND-14,vy:0,px:110,obs:[],lives:3,inv:0,msg:0,spawn:0.5,scroll:0,over:false,win:false,endT:0.8,lastGy:150};
+  hold=false;lastHud='';show('play');renderHud();
+  let last=performance.now();
+  const loop=ts=>{
+    if(!game)return;
+    const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+    update(dt);draw();
+    if(game.over&&game.endT<=0){finish();return;}
+    raf=requestAnimationFrame(loop);
+  };
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(loop);
+}
+function update(dt){
+  const g=game;
+  if(g.over){g.endT-=dt;return;}
+  g.t+=dt;g.scroll+=SPEED*dt;
+  const ending=g.t>27.5;
+  if(ending){
+    g.y+=((GROUND-14)-g.y)*Math.min(1,dt*3);g.vy=0;
+    const p=Math.min(1,(g.t-27.5)/2.5);g.px=110+(W-330-110)*p*p;
+  }else{
+    const target=hold?-230:230;
+    g.vy+=(target-g.vy)*Math.min(1,dt*9);
+    g.y+=g.vy*dt;
+    if(g.y<24){g.y=24;g.vy=0;}
+    if(g.y>GROUND-14){g.y=GROUND-14;g.vy=0;}
+  }
+  g.spawn-=dt;
+  if(g.spawn<=0&&g.t<24){
+    let gy=g.lastGy+(Math.random()*2-1)*150;
+    gy=Math.max(40,Math.min(GROUND-GAP-12,gy));
+    g.lastGy=gy;g.obs.push({x:W+10,gy});g.spawn=1.5;
+  }
+  g.obs.forEach(o=>o.x-=SPEED*dt);
+  g.obs=g.obs.filter(o=>o.x>-70);
+  g.inv-=dt;g.msg-=dt;
+  if(g.inv<=0&&!ending){
+    for(const o of g.obs){
+      if(g.px+11>o.x&&g.px-11<o.x+OBW&&(g.y-11<o.gy||g.y+11>o.gy+GAP)){
+        g.lives--;g.inv=1.3;g.msg=1;
+        if(g.lives<=0){g.over=true;g.win=false;}
+        break;
+      }
+    }
+  }
+  if(!g.over&&g.t>=30){g.t=30;g.over=true;g.win=true;g.endT=0.9;}
+  renderHud();
+}
+function renderHud(){
+  const g=game;if(!g)return;
+  const n=Math.max(0,Math.ceil(30-g.t));
+  const key=lang+n+':'+g.lives+':'+(g.msg>0);
+  if(key===lastHud)return;lastHud=key;
+  $('#hTime').textContent=t('gTime',{n});
+  $('#hMsg').textContent=g.msg>0?t('gHit'):'';
+  let s='';for(let i=0;i<3;i++)s+='<i class="'+(i<g.lives?'':'lost')+'">🥕</i>';
+  const L=$('#hLives');L.innerHTML=s;L.setAttribute('aria-label',t('gLivesAria')+': '+g.lives);
+}
+function draw(){
+  const g=game,c=ctx;
+  c.fillStyle='#efe4cc';c.fillRect(0,0,W,H);
+  c.fillStyle='#cdbf9f';
+  const sp=150,off=(g.scroll*0.35)%sp;
+  for(let x=-off;x<W+sp;x+=sp){c.fillRect(x,70,5,GROUND-70);c.fillRect(x-14,80,33,4);}
+  c.fillRect(0,92,W,2);
+  c.fillStyle='#1f3d2b';c.fillRect(0,GROUND,W,H-GROUND);
+  c.fillStyle='#efe4cc';
+  const so=g.scroll%40;for(let x=-so;x<W;x+=40)c.fillRect(x,GROUND+14,22,4);
+  /* obstacles */
+  for(const o of g.obs){
+    c.fillStyle='#1f3d2b';
+    c.fillRect(o.x,0,OBW,o.gy);
+    c.fillRect(o.x,o.gy+GAP,OBW,GROUND-(o.gy+GAP));
+    c.fillStyle='#efe4cc';
+    c.fillRect(o.x+21,0,3,o.gy-12);
+    c.fillRect(o.x+21,o.gy+GAP+12,3,GROUND-(o.gy+GAP)-12);
+    c.fillStyle='#8a2b1c';
+    c.fillRect(o.x-4,o.gy-12,OBW+8,12);
+    c.fillRect(o.x-4,o.gy+GAP,OBW+8,12);
+  }
+  /* sign + train */
+  const sx=W-120+Math.max(0,25-g.t)*SPEED;
+  if(sx<W+80){
+    c.fillStyle='#1f3d2b';c.fillRect(sx,GROUND-120,6,120);
+    c.fillStyle='#8a2b1c';c.fillRect(sx-30,GROUND-150,66,34);
+    c.fillStyle='#efe4cc';c.font='bold 20px "Hiragino Mincho ProN","Yu Mincho",serif';
+    c.textAlign='center';c.textBaseline='middle';c.fillText(t('gSign'),sx+3,GROUND-133);
+  }
+  if(g.t>24){
+    const p=Math.min(1,(g.t-24)/5),q=1-(1-p)*(1-p);
+    const x=W+40-q*255,y=GROUND-62;
+    c.fillStyle='#8a2b1c';c.fillRect(x,y,200,62);
+    c.fillStyle='#efe4cc';for(let i=0;i<4;i++)c.fillRect(x+14+i*46,y+12,30,22);
+    c.fillStyle='#1f3d2b';c.fillRect(x,y+46,200,8);c.fillRect(x+10,y+58,24,8);c.fillRect(x+166,y+58,24,8);
+  }
+  /* rabbit */
+  if(!(g.inv>0&&Math.floor(g.t*12)%2===0)){
+    c.font='30px serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#1f3d2b';
+    c.fillText('🐇',g.px,g.y);
+  }
+}
+function finish(){
+  const g=game;cancelAnimationFrame(raf);
+  result={win:g.win,lives:Math.max(0,g.lives),time:Math.min(30,g.t)};
+  game=null;hold=false;show('result');renderResult();$('#againBtn').focus();
+}
+function renderResult(){
+  if(!result)return;
+  const w=result.win;
+  $('#rArt').textContent=w?'🐇🚃✨':'🚃💨';
+  $('#rTitle').textContent=t(w?'winT':'failT');
+  $('#rTitle').style.color=w?'':'#8a2b1c';
+  $('#rSub').textContent=t(w?'winS':'failS');
+  $('#rStats').innerHTML='<div><span>'+t('sCarrot')+'</span><b>'+'🥕'.repeat(result.lives)+(result.lives?'':'0')+'</b></div>'
+    +'<div><span>'+t('sTime')+'</span><b>'+t('unitSec',{n:result.time.toFixed(1)})+'</b></div>';
+}
+
+$('#goBtn').addEventListener('click',startGame);
+$('#againBtn').addEventListener('click',startGame);
+$('#closeBtn').addEventListener('click',closeGame);
+$('#backBtn').addEventListener('click',closeGame);
+$('#quitBtn').addEventListener('click',()=>{cancelAnimationFrame(raf);game=null;hold=false;show('start');$('#goBtn').focus();});
+$('#scr-play').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;hold=true;e.preventDefault();});
+['pointerup','pointercancel','blur'].forEach(ev=>window.addEventListener(ev,()=>{hold=false;}));
+window.addEventListener('keydown',e=>{
+  if($('#ov').hidden)return;
+  if(e.key==='Escape'){closeGame();return;}
+  if(scr==='play'&&(e.code==='Space'||e.key==='ArrowUp')){hold=true;e.preventDefault();}
+});
+window.addEventListener('keyup',e=>{if(e.code==='Space'||e.key==='ArrowUp')hold=false;});
+
+applyLang();
+</script>
+</body>
+</html>
